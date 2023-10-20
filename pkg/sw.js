@@ -3,18 +3,18 @@
 // Define the URLs to cache
 const cacheName = 'anime-offline-database-cache-v1';
 const urlsToCache = [
-    'script.js',
-    'search_anime.js',
-    'search_anime_bg.wasm',
-    'search_anime.d.ts',
-    'package.json',
-    'search_anime_bg.wasm.d.ts',
-    'style.css',
-    'imgs/default.jpg',
-    'imgs/default-anime-fall.png',
-    'imgs/default-anime-spring.png',
-    'imgs/default-anime-summer.png',
-    'imgs/default-anime-winter.png',
+    './script.js',
+    './search_anime.js',
+    './search_anime_bg.wasm',
+    './search_anime.d.ts',
+    './package.json',
+    './search_anime_bg.wasm.d.ts',
+    './style.css',
+    './imgs/default.jpg',
+    './imgs/default-anime-fall.png',
+    './imgs/default-anime-spring.png',
+    './imgs/default-anime-summer.png',
+    './imgs/default-anime-winter.png',
     'https://raw.githubusercontent.com/manami-project/anime-offline-database/master/anime-offline-database-minified.json',
     'https://api.github.com/repos/manami-project/anime-offline-database/commits/master'
 ];
