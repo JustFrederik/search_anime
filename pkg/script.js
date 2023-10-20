@@ -29,7 +29,6 @@ async function run() {
     const count = document.getElementById("count");
 
     let currentPage = 1;
-    let page = 0;
     const itemsPerPage = 20;
     const open = 0;
     let search_data = {
@@ -68,7 +67,6 @@ async function run() {
         tagPreview.style.display = 'none';
         searchResults.innerHTML = "";
         currentPage = 1;
-        page = 0;
         count.innerHTML = search_count(updateQuery()).toString();
         loadSearchResults();
     }
@@ -105,14 +103,13 @@ async function run() {
         tagPreview.innerHTML = tag_search(e.target.value, 1, itemsPerPage).map(tag => `<div id="suggestion" onclick="setSuggestion('${tag}')">${tag}</div>`).join('');
         searchResults.innerHTML = "";
         currentPage = 1;
-        page = 0;
         count.innerHTML = search_count(updateQuery()).toString();
         loadSearchResults();
     });
     titleSearch.addEventListener('input', (_) => {
         setSuggestion(null);
     });
-    tagNot.addEventListener('change', (e) => {
+    tagNot.addEventListener('change', (_) => {
         setSuggestion(null);
     });
 
