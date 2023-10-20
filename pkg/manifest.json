@@ -1,0 +1,8 @@
+{
+  "name": "anime offline database",
+  "short_name": "aodb",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff",
+  "description": "A Anime offline db"
+}
