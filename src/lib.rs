@@ -87,8 +87,9 @@ fn search_data(query: &Search, data: &&Anime) -> bool {
     } {
         return false;
     }
+    let title = query.title.to_lowercase();
     //title search
-    if !query.title.is_empty() && !data.synonyms.iter().any(|v| v.contains(&query.title)) && !data.title.contains(&query.title) {
+    if !query.title.is_empty() && !data.synonyms.iter().any(|v| v.contains(&title)) && !data.title.to_lowercase().contains(&title) {
         return false;
     }
     true
@@ -121,6 +122,7 @@ impl Data {
         }
         let exclude: HashSet<String> = serde_json::from_str::<Vec<String>>(include_str!("exclude.json")).unwrap().into_iter().collect();
         let mut v = v.data.into_iter().map(|mut v| {
+            v.synonyms = v.synonyms.into_iter().map(|v|v.to_lowercase()).collect();
             v.tags = v.tags.into_iter().map(|v| match replace.get(&v) {
                 Some(v) => v.clone(),
                 None => v
