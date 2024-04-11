@@ -19,16 +19,74 @@ async function fetchWithTimeout(resource, options = {}) {
 
   return response;
 }
+
+const manualCacheName = "anime-offline-database-manual-cache";
+async function save_json(name, data) {
+  const newCache = await caches.open(manualCacheName);
+  const response = new Response(JSON.stringify(data));
+  await newCache.put("/storage/" + name, response);
+}
+
+async function save_response(name, data) {
+  const newCache = await caches.open(manualCacheName);
+  await newCache.put("/storage/" + name, data);
+}
+
+async function delete_json(name) {
+  const newCache = await caches.open(manualCacheName);
+  let v = await newCache.delete("/storage/" + name);
+  return await v.json();
+}
+
+async function load_json(name) {
+  let v = await load_response(name);
+  return await v.json();
+}
+
+async function load_response(name) {
+  const newCache = await caches.open(manualCacheName);
+  return await newCache.match("/storage/" + name);
+}
+
+async function get_latest_version() {
+  const url =
+    "https://api.github.com/repos/manami-project/anime-offline-database/commits/master";
+  const resp = await fetch(url);
+  const data = await resp.json();
+  return data.sha;
+}
+
+async function load_data() {
+  let url =
+    "https://raw.githubusercontent.com/manami-project/anime-offline-database/master/anime-offline-database-minified.json";
+  try {
+    let local_sha = await load_json("github_sha");
+    let server_sha = await get_latest_version();
+    if (local_sha !== server_sha) {
+      await delete_json("animes");
+      let data = await fetchWithTimeout(url, {
+        timeout: 3600,
+      });
+      await save_response("animes", data);
+      await save_json("github_sha", server_sha);
+      return data;
+    } else {
+      return await load_response("animes");
+    }
+  } catch (error) {
+    console.warn("no local version: " + error);
+  }
+  let resp = await fetchWithTimeout(url, {
+    timeout: 3600,
+  });
+  await save_response("animes", resp);
+  return resp;
+}
+
 async function run() {
   await init();
-  //
-  let data = await fetchWithTimeout(
-    "https://raw.githubusercontent.com/manami-project/anime-offline-database/master/anime-offline-database-minified.json",
-    {
-      timeout: 3600,
-    },
-  );
-  initialize(await data.text());
+  let resp = await load_data();
+  let data = initialize(await resp.text());
   document.getElementById("loading-screen").remove();
   document.getElementById("container").classList.remove("hidden");
   const searchResults = document.getElementById("searchResults");
@@ -102,8 +160,7 @@ async function run() {
 
   function handleInfiniteScroll() {
     const endOfPage =
-      window.innerHeight + window.pageYOffset + 300 >=
-      document.body.offsetHeight;
+      window.innerHeight + window.scrollY + 300 >= document.body.offsetHeight;
     if (endOfPage) {
       loadSearchResults(true);
     }
