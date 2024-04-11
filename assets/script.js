@@ -3,7 +3,7 @@ import init, {
   search_count,
   tag_search,
   initialize,
-} from "/pkg/search_anime.js";
+} from "../pkg/search_anime.js";
 
 async function fetchWithTimeout(resource, options = {}) {
   const { timeout = 8000 } = options;
