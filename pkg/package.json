@@ -1,0 +1,14 @@
+{
+  "name": "search_anime",
+  "version": "0.1.0",
+  "files": [
+    "search_anime_bg.wasm",
+    "search_anime.js",
+    "search_anime.d.ts"
+  ],
+  "module": "search_anime.js",
+  "types": "search_anime.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
