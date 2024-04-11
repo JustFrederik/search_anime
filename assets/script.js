@@ -164,7 +164,7 @@ async function run() {
       const openid =
         item.sources.length < open ? item.sources.length - 1 : open;
       return `<a href="${item.sources[openid]}" target="_blank" class="search-result-item" onclick="alert('${item.sources[0]}')">
-                        <img src="${item.picture.replace("https://cdn.anime-planet.com/images/anime/default", "/assets/imgs").replace("https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/default.jpg", "/assets/imgs/default.jpg")}" alt="${item.title}" loading="lazy">
+                        <img src="${item.picture.replace("https://cdn.anime-planet.com/images/anime/default", "./imgs").replace("https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/default.jpg", "./imgs/default.jpg")}" alt="${item.title}" loading="lazy">
                         <h3>${item.title}</h3>
                     </a>`;
     });
