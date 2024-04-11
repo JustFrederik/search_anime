@@ -21,9 +21,9 @@ async function fetchWithTimeout(resource, options = {}) {
 }
 async function run() {
   await init();
-  //https://raw.githubusercontent.com/manami-project/anime-offline-database/master/anime-offline-database-minified.json
+  //
   let data = await fetchWithTimeout(
-    "./pkg/anime-offline-database-minified.json",
+    "https://raw.githubusercontent.com/manami-project/anime-offline-database/master/anime-offline-database-minified.json",
     {
       timeout: 3600,
     },

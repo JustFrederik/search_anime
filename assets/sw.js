@@ -6,7 +6,7 @@ const urlsToCache = [
   "./pkg/assets/script.js",
   "./pkg/search_anime.js",
   "./pkg/search_anime_bg.wasm",
-  "./search_anime.d.ts",
+  "./pkg/search_anime.d.ts",
   "./pkg/package.json",
   "./pkg/search_anime_bg.wasm.d.ts",
   "./assets/style.css",
@@ -16,7 +16,6 @@ const urlsToCache = [
   "./assets/imgs/default-anime-summer.png",
   "./assets/imgs/default-anime-winter.png",
   "https://raw.githubusercontent.com/manami-project/anime-offline-database/master/anime-offline-database-minified.json",
-  "https://api.github.com/repos/manami-project/anime-offline-database/commits/master",
 ];
 
 // Event listener for installing the service worker
@@ -35,37 +34,49 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
-async function getData(event, response) {
-  const checkUpdate =
+async function get_latest_version() {
+  const url =
     "https://api.github.com/repos/manami-project/anime-offline-database/commits/master";
+  const resp = await fetch(url);
+  const data = await resp.json();
+  return data.sha;
+}
+
+async function get_stored_version() {
+  const cachedResponse = await caches.match("temp://stored_version");
+  if (cachedResponse === undefined) throw new Error("No old data");
+  const cachedData = await cachedResponse.json();
+  return cachedData.sha;
+}
+
+async function set_stored_version(sha) {
+  const cache = await caches.open(cacheName);
+  const newData = { sha: sha };
+  const response = new Response(JSON.stringify(newData));
+  await cache.put("temp://stored_version", response);
+}
+
+async function delete_stored_manga_data(req) {
+  const cache = await caches.open(cacheName);
+  cache.delete(req);
+}
+
+async function getData(event, response) {
   if (
     event.request.url ===
     "https://raw.githubusercontent.com/manami-project/anime-offline-database/master/anime-offline-database-minified.json"
   ) {
     try {
-      const resp = await fetch(checkUpdate);
-      const data = await resp.json();
-      const cachedResponse = await caches.match(event.request);
-      if (cachedResponse) throw new Error("No old data");
-      const cachedData = await cachedResponse.json();
-      if (data.sha !== cachedData.sha) {
-        const cache = await caches.open(cacheName);
-        let re = await fetch(event.request);
-        await cache.put(event.request, re.clone());
-        await cache.put(checkUpdate, resp.clone());
-        return re;
+      let local_sha = get_stored_version();
+      let server_sha = get_latest_version();
+      if (local_sha !== server_sha) {
+        delete_stored_manga_data(event.request);
+        set_stored_version(server_sha);
+        return fetch(event.request);
       }
     } catch (error) {
-      console.warn("failed to check for update: " + error);
+      console.warn("no local version: " + error);
     }
-    let v = await check2(event, response);
-    return v;
   }
-}
-
-function check2(event, response) {
-  if (response) {
-    return response;
-  }
-  return fetch(event.request);
+  return response || fetch(event.request);
 }
