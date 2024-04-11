@@ -184,9 +184,11 @@ struct Anime {
     pub picture: String,
     pub thumbnail: String,
     pub synonyms: Vec<String>,
-    pub relations: Vec<String>,
+    pub relatedAnime: Vec<String>,
     pub tags: Vec<String>,
 }
+
+
 
 #[derive(Serialize, Deserialize)]
 struct Root {
