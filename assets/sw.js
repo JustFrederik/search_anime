@@ -15,7 +15,6 @@ const urlsToCache = [
   "./assets/imgs/default-anime-spring.png",
   "./assets/imgs/default-anime-summer.png",
   "./assets/imgs/default-anime-winter.png",
-  "https://raw.githubusercontent.com/manami-project/anime-offline-database/master/anime-offline-database-minified.json",
 ];
 
 // Event listener for installing the service worker
@@ -42,18 +41,28 @@ async function get_latest_version() {
   return data.sha;
 }
 
-async function get_stored_version() {
-  const cachedResponse = await caches.match("temp://stored_version");
+async function get_stored_data() {
+  const cache = await caches.open(cacheName);
+  const cachedResponse = await cache.match("temp://animes.json");
   if (cachedResponse === undefined) throw new Error("No old data");
   const cachedData = await cachedResponse.json();
   return cachedData.sha;
 }
 
-async function set_stored_version(sha) {
+async function get_stored_version() {
+  const cache = await caches.open(cacheName);
+  const cachedResponse = await cache.match("temp://stored_version");
+  if (cachedResponse === undefined) throw new Error("No old data");
+  const cachedData = await cachedResponse.json();
+  return cachedData.sha;
+}
+
+async function set_stored_version(sha, data) {
   const cache = await caches.open(cacheName);
   const newData = { sha: sha };
   const response = new Response(JSON.stringify(newData));
   await cache.put("temp://stored_version", response);
+  await cache.put("temp://animes.json", data);
 }
 
 async function delete_stored_manga_data(req) {
@@ -62,6 +71,7 @@ async function delete_stored_manga_data(req) {
 }
 
 async function getData(event, response) {
+  console.log(event.request.url);
   if (
     event.request.url ===
     "https://raw.githubusercontent.com/manami-project/anime-offline-database/master/anime-offline-database-minified.json"
@@ -71,12 +81,30 @@ async function getData(event, response) {
       let server_sha = get_latest_version();
       if (local_sha !== server_sha) {
         delete_stored_manga_data(event.request);
-        set_stored_version(server_sha);
-        return fetch(event.request);
+        let data = fetch(event.request);
+        set_stored_version(server_sha, data);
+        return data;
+      } else {
+        return get_stored_data();
       }
     } catch (error) {
       console.warn("no local version: " + error);
     }
   }
   return response || fetch(event.request);
+}
+
+async function fetchWithTimeout(resource, options = {}) {
+  const { timeout = 8000 } = options;
+
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+
+  const response = await fetch(resource, {
+    ...options,
+    signal: controller.signal,
+  });
+  clearTimeout(id);
+
+  return response;
 }
